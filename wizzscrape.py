@@ -2,12 +2,15 @@ from datetime import datetime
 import dryscrape
 import sys
 import time
+import os
 from bs4 import BeautifulSoup
 
 
 def main():
     t = datetime.now()
-    with open("/home/osmc/code/wizzscrape/activations.txt", "a") as myfile:
+    working_dir = os.getcwd()
+    f_name = working_dir + "/activations.txt"
+    with open(f_name, "a") as myfile:
         myfile.write("activated at " + t.strftime("%Y-%m-%d %H:%M") + '\n')
 
     if 'linux' in sys.platform:
@@ -36,11 +39,11 @@ def main():
 
     response = sess.body()
     soup = BeautifulSoup(response)
-    f_name = "/home/osmc/code/wizzscrape/htmls/SS_" + t.strftime("%d_%H") + ".html"
+    f_name = working_dir + "/htmls/SS_" + t.strftime("%d_%H") + ".html"
     with open(f_name, "a") as myfile:
         myfile.write(str(soup.prettify().encode('utf-8')))
 
-    f_name = "/home/osmc/code/wizzscrape/images/SS_" + t.strftime("%d_%H") + ".png"
+    f_name = working_dir + "/images/SS_" + t.strftime("%d_%H") + ".png"
     sess.render(f_name)
     print(f_name)
 
