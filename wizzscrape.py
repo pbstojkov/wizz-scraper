@@ -2,6 +2,8 @@ from datetime import datetime
 import dryscrape
 import sys
 import time
+from bs4 import BeautifulSoup
+
 
 def main():
     t = datetime.now()
@@ -31,6 +33,12 @@ def main():
 
     # save a screenshot of the web page
     time.sleep(30)
+
+    response = sess.body()
+    soup = BeautifulSoup(response)
+    f_name = "/home/osmc/code/wizzscrape/htmls/SS_" + t.strftime("%d_%H") + ".html"
+    with open(f_name, "a") as myfile:
+        myfile.write(str(soup.prettify().encode('utf-8')))
 
     f_name = "/home/osmc/code/wizzscrape/images/SS_" + t.strftime("%d_%H") + ".png"
     sess.render(f_name)
