@@ -15,6 +15,9 @@ def find_price_in_html(search_date, hideously_big_str):
     start_index = hideously_big_str.find(magic_string, start_index) + len(magic_string)
     stop_index = hideously_big_str.find('\\n', start_index)
     price = hideously_big_str[start_index:stop_index]
+    if len(price) > 7:  # the price is prooobably not more than 9999.99
+        print("Price was bigger than 7 symbols.. assuming there was a bug. ERROR !!! (" + price[:7] + ").")
+        return price[:7]
     return price
 
 def main():
@@ -58,9 +61,12 @@ def main():
     # save a screenshot of the web page
     time.sleep(30)
 
-    response = sess.body()
-    soup = BeautifulSoup(response)
+    f_name = working_dir + "/images/SS_" + t.strftime("%d_%H") + ".png"
+    sess.render(f_name)  # taking the screenshot.
+    print(f_name)
 
+    soup = BeautifulSoup(sess.body())  # there probably is a better way. 
+    # bs4 was supposed to be used way smarter than this .. but oh well, whatever works.
     hideously_big_str = str(soup.prettify().encode('utf-8'))
 
     f_name = working_dir + "/results/" + input_file[:-3] + ".csv"
@@ -79,12 +85,8 @@ def main():
         myfile.write("\n")
 
     f_name = working_dir + "/htmls/SS_" + t.strftime("%d_%H") + ".html"
-    with open(f_name, "a") as myfile:
+    with open(f_name, "w") as myfile:
         myfile.write(hideously_big_str)
-
-    f_name = working_dir + "/images/SS_" + t.strftime("%d_%H") + ".png"
-    sess.render(f_name)
-    print(f_name)
 
 
 if __name__ == "__main__":
