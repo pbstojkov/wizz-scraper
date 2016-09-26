@@ -4,9 +4,9 @@ Get prices for certain flights (semi)automaticly.
 
 ## Usage
 
-For now it does 3 things from which one should stay in final version..
-+takes a screenshot of the website and stores it in images/
-+takes an 'html snapshot' and stores it in htmls/
+For now it does 3 things from which one should stay in final version..  
++takes a screenshot of the website and stores it in images/  
++takes an 'html snapshot' and stores it in htmls/  
 +parses the html and saves the prices of certain flights in a csv file in results/
 
 This is done twice a day at pseudo random times. The randomness is introduced in delayedActivation.sh
