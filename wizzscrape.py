@@ -44,7 +44,7 @@ def process(in_file_path):
     with open(in_file_path, "r") as myfile:
         raw_input = myfile.read().split('\n')
         page_path = raw_input[0]
-        cut_index = page_path.find(".com") + len(".com")
+        cut_index = page_path.find(".com") + len(".com") + 1
         page_path = page_path[cut_index:]
 
         for date_param in raw_input[1:]:
@@ -77,7 +77,7 @@ def process(in_file_path):
     sess.set_attribute('auto_load_images', False)
 
     # visit specified page
-    sess.visit('#' + page_path)
+    sess.visit(page_path)
     # todo: does this do anything interesting if the page is wrong?
     # sess.visit('#/booking/select-flight/EIN/SOF/2016-12-23/2017-01-06/1/0/0')
 
