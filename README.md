@@ -4,19 +4,20 @@ Get prices for certain flights (semi)automaticly.
 
 ## Usage
 
-For now it is just taking screenshots for a hardcoded flight twice a day at "random" times and stores them in .. a hardcoded path folder.
-+ 'html snapshot' is saved in folder /htmls along with the screenshot. For further parsing.
+For now it does 3 things from which one should stay in final version..
++takes a screenshot of the website and stores it in images/
++takes an 'html snapshot' and stores it in htmls/
++parses the html and saves the prices of certain flights in a csv file in results/
 
-The randomness is introduced in delayedActivation.sh
+This is done twice a day at pseudo random times. The randomness is introduced in delayedActivation.sh
 
-crontab content in crontab.txt
+crontab content is shown in crontab.txt
 
-Python version used is Python 3.4.2
+Python version that I am testing with: Python 3.4.2
 
 ## Work in progress
 
-A settings file will be created to address all the hardcoded variables such as, flight info and various paths
-The prices will be kept in a cleaner, more readable way. Probably in a CSV file.
+A settings file will be created to address all the hardcoded variables such as, flight info.
 
 ## Crontab
 
