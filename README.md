@@ -2,12 +2,12 @@
 
 Get prices for certain flights (semi)automaticly.
 
-## Usage
+## Overview
 
-For now it does 3 things from which one should stay in final version..  
 +takes a screenshot of the website and stores it in images/  
 +takes an 'html snapshot' and stores it in htmls/  
-+parses the html and saves the prices of certain flights in a csv file in results/
++parses the html and saves the prices of certain flights in a csv file in results/  
++gets input from .in files in SettingFiles/
 
 This is done twice a day at pseudo random times. The randomness is introduced in delayedActivation.sh
 
@@ -15,9 +15,12 @@ crontab content is shown in crontab.txt
 
 Python version that I am testing with: Python 3.4.2
 
-## Work in progress
+The screenshot and html snapshot will be removed after a week or so. They are only there for debugging.
 
-A settings file will be created to address all the hardcoded variables such as, flight info.
+## Input files
+For every X.in file in SettingFiles/ a separate X.csv file will be created and filled in every time the python script is executed. First line should be the link to the wizzair page you want to check. The next lines should be the dates that you want to record, in the same format that you see them on the website.  
+Examples can be found in Examples folder.
+
 
 ## Crontab
 
