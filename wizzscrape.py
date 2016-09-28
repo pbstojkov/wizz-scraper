@@ -6,6 +6,8 @@ import os
 from bs4 import BeautifulSoup
 import argparse
 import ntpath
+from pushetta import Pushetta
+
 
 def find_price_in_html(search_date, hideously_big_str):
     '''
@@ -22,23 +24,13 @@ def find_price_in_html(search_date, hideously_big_str):
         return price[:7]
     return price
 
+
 def process(in_file_path):
     t = datetime.now()
 
     input_file_name = ntpath.basename(in_file_path)
-    # input_file_name = in_file_path
-    # input_file_name = "Christmas1.in"
-
     dates_to_check = list();
-    # dates_to_check = ("22 December 2016",
-    #                   "23 December 2016",
-    #                   "24 December 2016",
-    #                   "5 January 2017",
-    #                   "6 January 2017",
-    #                   "7 January 2017",)
-
     working_dir = os.path.dirname(os.path.abspath(in_file_path))[:-(len("/SettingFiles"))]
-    # working_dir = os.getcwd()
 
     page_path = ""
     with open(in_file_path, "r") as myfile:
@@ -107,9 +99,63 @@ def process(in_file_path):
             myfile.write(price + ",")
         myfile.write("\n")
 
+    try:
+        notification_msg = generate_notif_msg(f_name)
+    except:
+        print("generating notif msg failed somehow.. Is the proper csv file provided?")
+        print("csv file :", f_name)
+
     f_name = working_dir + "/htmls/SS_" + t.strftime("%d_%H") + ".html"
     with open(f_name, "w") as myfile:
         myfile.write(hideously_big_str)
+
+    send_notification(working_dir, notification_msg)
+
+
+def generate_notif_msg(f_name):  # gets the csv file with the results
+    msg = ""
+    with open(f_name, "r") as myfile:
+        raw_input = myfile.read().split('\n')
+        raw_dates = raw_input[0].split(',')[1:-1]  # to ignore the first text and the blank element at the end
+
+        current_prices = raw_input[-2].split(',')[1:-1]
+        previous_prices = raw_input[-3].split(',')[1:-1]
+
+    if len(current_prices) != len(previous_prices) or len(current_prices) != len(raw_dates):
+        raise Exception('Check the input file.. sizes dont match')
+
+    for i in range(0, len(current_prices)):
+        if current_prices[i] != previous_prices[i]:
+            msg += raw_dates[i] + " changed from " + previous_prices[i] + " to " + current_prices[i] + "\n"
+    return msg
+
+
+def send_notification(working_dir, msg):
+    f_name = working_dir + "/SettingFiles/pushetta"
+    if not os.path.isfile(f_name):  # if such a file doesnt exist
+        print("Are you sure you dont want to use pushetta? It is pretty neat.")
+        return
+
+    with open(f_name, "r") as myfile:
+        raw_input = myfile.read().split('\n')
+        API_KEY= raw_input[0]
+        CHANNEL_NAME= raw_input[1]
+
+    p=Pushetta(API_KEY)
+    p.pushMessage(CHANNEL_NAME, msg)
+
+
+# def test(in_file_path):
+#     input_file_name = ntpath.basename(in_file_path)
+#     working_dir = os.path.dirname(os.path.abspath(in_file_path))[:-(len("/SettingFiles"))]
+#     f_name = working_dir + "/results/" + input_file_name[:-3] + ".csv"
+#     try:
+#         notification_msg = generate_notif_msg(f_name)
+#     except:
+#         print("generating notif msg failed somehow.. Is the proper csv file provided?")
+#         print("csv file :", f_name)
+
+#     send_notification(working_dir, notification_msg)
 
 
 def main():
@@ -119,6 +165,7 @@ def main():
     args = parser.parse_args()
 
     process(args.in_file_path)
+    # test(args.in_file_path)
 
 
 if __name__ == "__main__":
