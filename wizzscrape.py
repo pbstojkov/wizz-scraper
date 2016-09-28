@@ -148,7 +148,7 @@ def send_notification(working_dir, msg):
     p.pushMessage(CHANNEL_NAME, msg)
 
 
-def test(in_file_path):
+# def test(in_file_path):
 #     sess = dryscrape.Session(base_url = 'https://wizzair.com/')
 #     sess.clear_cookies()
 
@@ -170,8 +170,8 @@ def main():
     parser.add_argument('in_file_path')
     args = parser.parse_args()
 
-    # process(args.in_file_path)
-    test(args.in_file_path)
+    process(args.in_file_path)
+    # test(args.in_file_path)
 
 
 if __name__ == "__main__":
