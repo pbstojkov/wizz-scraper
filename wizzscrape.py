@@ -65,6 +65,9 @@ def process(in_file_path):
     # set up a web scraping session
     sess = dryscrape.Session(base_url = 'https://wizzair.com/')
 
+    # no cookies pls
+    sess.clear_cookies()
+
     # we don't need images
     sess.set_attribute('auto_load_images', False)
 
@@ -145,7 +148,10 @@ def send_notification(working_dir, msg):
     p.pushMessage(CHANNEL_NAME, msg)
 
 
-# def test(in_file_path):
+def test(in_file_path):
+#     sess = dryscrape.Session(base_url = 'https://wizzair.com/')
+#     sess.clear_cookies()
+
 #     input_file_name = ntpath.basename(in_file_path)
 #     working_dir = os.path.dirname(os.path.abspath(in_file_path))[:-(len("/SettingFiles"))]
 #     f_name = working_dir + "/results/" + input_file_name[:-3] + ".csv"
@@ -164,8 +170,8 @@ def main():
     parser.add_argument('in_file_path')
     args = parser.parse_args()
 
-    process(args.in_file_path)
-    # test(args.in_file_path)
+    # process(args.in_file_path)
+    test(args.in_file_path)
 
 
 if __name__ == "__main__":
