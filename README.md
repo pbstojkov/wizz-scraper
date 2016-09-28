@@ -37,6 +37,11 @@ Cron is used to issue repeated activation of tasks. In our case the .sh file wil
 
 Basically, the last two lines from crontab.txt need to be added using command: crontab -e
 
+## Things you probably have to install
+
+sudo apt-get install cron
+sudo pip3 install dryscrape bs4 pushetta
+
 ## HELP
 
 If you actually want to try this and are failing for any reason, don't hesitate to ask me questions about it.
