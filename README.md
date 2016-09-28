@@ -40,7 +40,9 @@ Basically, the last two lines from crontab.txt need to be added using command: c
 ## Things you probably have to install
 
 sudo apt-get install cron  
-sudo pip3 install dryscrape bs4 pushetta
+sudo pip3 install dryscrape beautifulsoup4 pushetta
+
+oor "sudo apt-get install python-bs4" if pip doesn't succeed for beautifulsoup4.
 
 ## HELP
 
