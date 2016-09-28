@@ -25,10 +25,13 @@ def find_price_in_html(search_date, hideously_big_str):
     return price
 
 
-def process(in_file_path):
+def process(in_file_path, save_images, save_html):
     t = datetime.now()
 
     input_file_name = ntpath.basename(in_file_path)
+
+    print("activated " + input_file_name + " at " + t.strftime("%Y-%m-%d %H:%M") + '\n')
+
     dates_to_check = list();
     working_dir = os.path.dirname(os.path.abspath(in_file_path))[:-(len("/SettingFiles"))]
 
@@ -54,7 +57,7 @@ def process(in_file_path):
         os.makedirs(working_dir + "/images/")
 
     f_name = working_dir + "/activations.txt"
-    with open(f_name, "a") as myfile:
+    with open(f_name, "a") as myfile:  # probably this will go away .. as the activation will be seen in the log too
         myfile.write("activated " + input_file_name + " at " + t.strftime("%Y-%m-%d %H:%M") + '\n')
 
     if 'linux' in sys.platform:
@@ -80,8 +83,8 @@ def process(in_file_path):
 
     # save a screenshot of the web page
     f_name = working_dir + "/images/SS_" + t.strftime("%d_%H") + ".png"
-    sess.render(f_name)  # taking the screenshot.
-    print(f_name)
+    if save_images == 1:
+        sess.render(f_name)  # taking the screenshot.
 
     soup = BeautifulSoup(sess.body())  # there probably is a better way. 
     # bs4 was supposed to be used way smarter than this .. but oh well, whatever works.
@@ -104,13 +107,16 @@ def process(in_file_path):
 
     try:
         notification_msg = generate_notif_msg(f_name)
-    except:
+    except Exception as e: 
+        print("ERROR :", str(e))
         print("generating notif msg failed somehow.. Is the proper csv file provided?")
         print("csv file :", f_name)
+        notification_msg = "You might want to look at the log."
 
-    f_name = working_dir + "/htmls/SS_" + t.strftime("%d_%H") + ".html"
-    with open(f_name, "w") as myfile:
-        myfile.write(hideously_big_str)
+    if save_html == 1:
+        f_name = working_dir + "/htmls/SS_" + t.strftime("%d_%H") + ".html"
+        with open(f_name, "w") as myfile:
+            myfile.write(hideously_big_str)
 
     send_notification(working_dir, notification_msg)
 
@@ -130,10 +136,14 @@ def generate_notif_msg(f_name):  # gets the csv file with the results
     for i in range(0, len(current_prices)):
         if current_prices[i] != previous_prices[i]:
             msg += raw_dates[i] + " changed from " + previous_prices[i] + " to " + current_prices[i] + "\n"
+
     return msg
 
 
 def send_notification(working_dir, msg):
+    if len(msg) == 0:
+        return
+
     f_name = working_dir + "/SettingFiles/pushetta"
     if not os.path.isfile(f_name):  # if such a file doesnt exist
         print("Are you sure you dont want to use pushetta? It is pretty neat.")
@@ -148,30 +158,33 @@ def send_notification(working_dir, msg):
     p.pushMessage(CHANNEL_NAME, msg)
 
 
-# def test(in_file_path):
-#     sess = dryscrape.Session(base_url = 'https://wizzair.com/')
-#     sess.clear_cookies()
+def test(in_file_path, bs, bss):
+    print("lol.. test function forgotten again huh?")
+    # sess = dryscrape.Session(base_url = 'https://wizzair.com/')
+    # sess.clear_cookies()
 
-#     input_file_name = ntpath.basename(in_file_path)
-#     working_dir = os.path.dirname(os.path.abspath(in_file_path))[:-(len("/SettingFiles"))]
-#     f_name = working_dir + "/results/" + input_file_name[:-3] + ".csv"
-#     try:
-#         notification_msg = generate_notif_msg(f_name)
-#     except:
-#         print("generating notif msg failed somehow.. Is the proper csv file provided?")
-#         print("csv file :", f_name)
+    # input_file_name = ntpath.basename(in_file_path)
+    # working_dir = os.path.dirname(os.path.abspath(in_file_path))[:-(len("/SettingFiles"))]
+    # f_name = working_dir + "/results/" + input_file_name[:-3] + ".csv"
+    # try:
+    #     notification_msg = generate_notif_msg(f_name)
+    # except:
+    #     print("generating notif msg failed somehow.. Is the proper csv file provided?")
+    #     print("csv file :", f_name)
 
-#     send_notification(working_dir, notification_msg)
+    # send_notification(working_dir, notification_msg)
 
 
 def main():
     parser = argparse.ArgumentParser(
-        description="This script is intended to be called with one argument: path to the input .in file.")
+        description="This script is intended to be called with three arguments: path to the input .in file, save images? (0/1) and save html? (0/1)")
     parser.add_argument('in_file_path')
+    parser.add_argument('save_images')
+    parser.add_argument('save_html')
     args = parser.parse_args()
 
-    process(args.in_file_path)
-    # test(args.in_file_path)
+    process(args.in_file_path, args.save_images, args.save_html)
+    # test(args.in_file_path, args.save_images, args.save_html)
 
 
 if __name__ == "__main__":
