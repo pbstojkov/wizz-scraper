@@ -39,4 +39,4 @@ Basically, the last two lines from crontab.txt need to be added using command: c
 
 ## HELP
 
-If you actually want to try this and are failing for some reasone, don't hesitate to ask me questions about it.
+If you actually want to try this and are failing for any reason, don't hesitate to ask me questions about it.
