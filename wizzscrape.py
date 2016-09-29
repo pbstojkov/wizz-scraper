@@ -77,12 +77,11 @@ def process(in_file_path, save_images, save_html):
     # visit specified page
     sess.visit(page_path)
     # todo: does this do anything interesting if the page is wrong?
-    # sess.visit('#/booking/select-flight/EIN/SOF/2016-12-23/2017-01-06/1/0/0')
 
     time.sleep(30)  # making sure that everything is loaded properly. 30sec should be enough.
 
     # save a screenshot of the web page
-    f_name = working_dir + "/images/SS_" + t.strftime("%d_%H") + ".png"
+    f_name = working_dir + "/images/" + input_file_name + t.strftime("_%d_%H") + ".png"
     if save_images == 1:
         sess.render(f_name)  # taking the screenshot.
 
@@ -114,7 +113,7 @@ def process(in_file_path, save_images, save_html):
         notification_msg = "You might want to look at the log."
 
     if save_html == 1:
-        f_name = working_dir + "/htmls/SS_" + t.strftime("%d_%H") + ".html"
+        f_name = working_dir + "/htmls/" + input_file_name + t.strftime("_%d_%H") + ".html"
         with open(f_name, "w") as myfile:
             myfile.write(hideously_big_str)
 
