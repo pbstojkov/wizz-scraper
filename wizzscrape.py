@@ -43,7 +43,8 @@ def process(in_file_path, save_images, save_html):
         page_path = page_path[cut_index:]
 
         for date_param in raw_input[1:]:
-            dates_to_check.append(date_param)
+            if len(date_param) > 0:
+                dates_to_check.append(date_param)
 
     if len(page_path) < 1:
         print("Something is wrong with page_path -", page_path)
