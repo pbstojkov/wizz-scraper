@@ -1,12 +1,13 @@
 from datetime import datetime
 import dryscrape
-import sys
 import time
 import os
 from bs4 import BeautifulSoup
 import argparse
 import ntpath
 from pushetta import Pushetta
+from matplotlib.dates import DateFormatter
+from matplotlib import pyplot as plt
 
 
 def find_price_in_html(search_date, hideously_big_str):
@@ -38,11 +39,18 @@ def process(in_file_path, save_images, save_html):
     page_path = ""
     with open(in_file_path, "r") as myfile:
         raw_input = myfile.read().split('\n')
-        page_path = raw_input[0]
+        if raw_input[0] == "Wizz discount club":
+            wizz_discount = True
+            page_path = raw_input[1]
+            offset = 2
+        else:
+            wizz_discount = False
+            page_path = raw_input[0]
+            offset = 1
         cut_index = page_path.find(".com") + len(".com") + 1
         page_path = page_path[cut_index:]
 
-        for date_param in raw_input[1:]:
+        for date_param in raw_input[offset:]:
             if len(date_param) > 0:
                 dates_to_check.append(date_param)
 
@@ -58,13 +66,8 @@ def process(in_file_path, save_images, save_html):
         os.makedirs(working_dir + "/images/")
 
     f_name = working_dir + "/activations.txt"
-    with open(f_name, "a") as myfile:  # probably this will go away .. as the activation will be seen in the log too
+    with open(f_name, "a") as myfile:
         myfile.write("activated " + input_file_name + " at " + t.strftime("%Y-%m-%d %H:%M") + '\n')
-
-    if 'linux' in sys.platform:
-        # start xvfb in case no X is running. Make sure xvfb 
-        # is installed, otherwise this won't work!
-        dryscrape.start_xvfb()
 
     # set up a web scraping session
     sess = dryscrape.Session(base_url = 'https://wizzair.com/')
@@ -81,9 +84,15 @@ def process(in_file_path, save_images, save_html):
 
     time.sleep(30)  # making sure that everything is loaded properly. 30sec should be enough.
 
+    if wizz_discount:  # if we want to follow the discounted prices
+        print("Yay discounts!")
+        discount_button = sess.at_xpath('//*[@class="button button--outlined button--medium button--block"]')
+        discount_button.click() 
+        time.sleep(2)
+
     # save a screenshot of the web page
-    f_name = working_dir + "/images/" + input_file_name + t.strftime("_%d_%H") + ".png"
     if save_images == 1:
+        f_name = working_dir + "/images/" + input_file_name + t.strftime("_%d_%H") + ".png"
         sess.render(f_name)  # taking the screenshot.
 
     soup = BeautifulSoup(sess.body())  # there probably is a better way. 
@@ -106,6 +115,12 @@ def process(in_file_path, save_images, save_html):
         myfile.write("\n")
 
     try:
+        csv_to_graph(f_name)
+    except Exception as e: 
+        print("ERROR :", str(e))
+        print("You can ignore that or change the hardcoded path in csv_to_graph() to a more apropriate place to store graphs.")
+
+    try:
         notification_msg = generate_notif_msg(f_name)
     except Exception as e: 
         print("ERROR :", str(e))
@@ -124,11 +139,14 @@ def process(in_file_path, save_images, save_html):
 def generate_notif_msg(f_name):  # gets the csv file with the results
     msg = ""
     with open(f_name, "r") as myfile:
-        raw_input = myfile.read().split('\n')
+        raw_input = myfile.read().split('\n')[:-1]  # -1 to ignore the last blank element
+        if len(raw_input) < 3:
+            return ""  # this is the first run of the script .. there are no previous prices
+
         raw_dates = raw_input[0].split(',')[1:-1]  # to ignore the first text and the blank element at the end
 
-        current_prices = raw_input[-2].split(',')[1:-1]
-        previous_prices = raw_input[-3].split(',')[1:-1]
+        current_prices = raw_input[-1].split(',')[1:-1]
+        previous_prices = raw_input[-2].split(',')[1:-1]
 
     if len(current_prices) != len(previous_prices) or len(current_prices) != len(raw_dates):
         raise Exception('Check the input file.. sizes dont match')
@@ -158,10 +176,52 @@ def send_notification(working_dir, msg):
     p.pushMessage(CHANNEL_NAME, msg)
 
 
+def csv_to_graph(f_name):
+    with open(f_name, "r") as myfile:
+        raw_input = myfile.read().split('\n')
+        raw_dates = raw_input[0].split(',')[1:-1]  # to ignore the first text and the blank element at the end
+
+        pricesBySample = list()
+        samples = list()
+        for ri in raw_input[1:-1]:
+            pricesBySample.append(ri.split(',')[1:-1])
+            samples.append(ri.split(',')[0])
+
+    x = list()
+    for sample in samples:
+        date_obj = datetime.strptime(sample, '%Y-%m-%d %H:%M')
+        x.append(date_obj)
+
+    # style
+    plt.style.use('ggplot')
+
+    input_file_name = ntpath.basename(f_name)[:-4]
+    # for price in pricesBySample:
+    for i in range(0, len(raw_dates)):
+        img_name = "/var/www/html/images/" + input_file_name + "_" + raw_dates[i].replace(' ', '_') + ".png"
+
+        y = list()
+        for price in pricesBySample:
+            y.append(float(price[i]))
+
+        fig, ax = plt.subplots()
+        ax.plot_date(x, y, '--o')
+        ax.xaxis.set_major_formatter(DateFormatter('%Y-%m-%d'))
+        fig.autofmt_xdate()
+        plt.savefig(img_name, bbox_inches='tight')
+
+
 def test(in_file_path, bs, bss):
     print("lol.. test function forgotten again huh?")
     # sess = dryscrape.Session(base_url = 'https://wizzair.com/')
     # sess.clear_cookies()
+
+    # dryscrape.start_xvfb()
+
+    # input_file_name = ntpath.basename(in_file_path)
+    # working_dir = os.path.dirname(os.path.abspath(in_file_path))[:-(len("/SettingFiles"))]
+    # f_name = working_dir + "/results/" + input_file_name[:-3] + ".csv"
+    # csv_to_graph(f_name)
 
     # input_file_name = ntpath.basename(in_file_path)
     # working_dir = os.path.dirname(os.path.abspath(in_file_path))[:-(len("/SettingFiles"))]
