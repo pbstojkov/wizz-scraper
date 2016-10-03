@@ -6,8 +6,11 @@ from bs4 import BeautifulSoup
 import argparse
 import ntpath
 from pushetta import Pushetta
+import matplotlib
+matplotlib.use('Agg')
 from matplotlib.dates import DateFormatter
 from matplotlib import pyplot as plt
+import sys
 
 
 def find_price_in_html(search_date, hideously_big_str):
@@ -68,6 +71,12 @@ def process(in_file_path, save_images, save_html):
     f_name = working_dir + "/activations.txt"
     with open(f_name, "a") as myfile:
         myfile.write("activated " + input_file_name + " at " + t.strftime("%Y-%m-%d %H:%M") + '\n')
+
+
+    if 'linux' in sys.platform:
+    # start xvfb in case no X is running. Make sure xvfb 
+    # is installed, otherwise this won't work!
+        dryscrape.start_xvfb()
 
     # set up a web scraping session
     sess = dryscrape.Session(base_url = 'https://wizzair.com/')
@@ -194,6 +203,7 @@ def csv_to_graph(f_name):
 
     # style
     plt.style.use('ggplot')
+    # plt.xkcd() .. need to install more stuff to use this.
 
     input_file_name = ntpath.basename(f_name)[:-4]
     # for price in pricesBySample:
